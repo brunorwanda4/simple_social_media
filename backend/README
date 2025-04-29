@@ -1,0 +1,12 @@
+# Install dependencies
+npm install express mysql2 bcryptjs cors dotenv
+npm install -D typescript @types/express @types/cors @types/bcryptjs @types/node
+
+# Create tsconfig
+npx tsc --init
+
+# Compile
+npx tsc
+
+# Run
+node dist/server.js
