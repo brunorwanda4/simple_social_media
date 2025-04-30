@@ -1,8 +1,6 @@
 CREATE DATABASE IF NOT EXISTS social_app;
 USE social_app;
 
-USE social_app;
-
 DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS users;
@@ -19,8 +17,6 @@ CREATE TABLE users (
 
 CREATE INDEX idx_email ON users(email);
 
-
-CREATE INDEX idx_email ON users(email);
 
 CREATE TABLE categories (
     id INT AUTO_INCREMENT PRIMARY KEY,

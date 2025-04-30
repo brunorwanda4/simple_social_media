@@ -13,9 +13,6 @@ import { testDatabaseConnection } from './config/db'; // Import the database con
 const app = express();
 const PORT = process.env.API_PORT ? parseInt(process.env.API_PORT as string, 10) : 5001;
 
-// --- Get JWT Secret ---
-// Moved the check here as JWT_SECRET is used in utils/jwt.ts,
-// but it's good practice to ensure it's loaded early.
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
     console.error('FATAL ERROR: JWT_SECRET is not defined.');
@@ -28,12 +25,8 @@ app.use(cors()); // Enable CORS for all origins
 app.use(express.json()); // Parse JSON request bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bodies
 
-// --- Routes ---
-// Mount the authentication routes under the '/api' path
 app.use('/api', authRoutes);
-// Mount the category routes under the '/api/categories' path
 app.use('/api/categories', categoryRoutes);
-// Mount the product routes under the '/api/products' path
 app.use('/api/products', productRoutes);
 
 

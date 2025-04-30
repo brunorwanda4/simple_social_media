@@ -1,6 +1,7 @@
 import { Route, Routes, Link, Navigate } from "react-router-dom";
 import AddProduct from "../components/form/add-product-form";
-import ViewProducts from "./view-all-products";
+import CategoryPage from "./CategoryPage";
+import ProductPage from "./ProductPage";
 
 // Component for the main Dashboard layout
 const DashboardPage: React.FC = () => {
@@ -13,7 +14,7 @@ const DashboardPage: React.FC = () => {
         <ul className="flex justify-center space-x-6">
           <li>
             <Link
-              to="/dashboard/add-product"
+              to="/dashboard/products"
               className="text-blue-600 hover:underline text-lg"
             >
               Add Product
@@ -21,10 +22,10 @@ const DashboardPage: React.FC = () => {
           </li>
           <li>
             <Link
-              to="/dashboard/view-products"
+              to="/dashboard/categories"
               className="text-blue-600 hover:underline text-lg"
             >
-              View Products
+              categories
             </Link>
           </li>
         </ul>
@@ -34,9 +35,10 @@ const DashboardPage: React.FC = () => {
       <div className="bg-white p-6 rounded-lg shadow-md">
         <Routes>
           {/* Redirect from /dashboard to /dashboard/view-products by default */}
-          <Route path="/" element={<Navigate to="view-products" replace />} />
-          <Route path="add-product" element={<AddProduct />} />
-          <Route path="view-products" element={<ViewProducts />} />
+          <Route path="/" element={<Navigate to="products" replace />} />
+          <Route path="/add-product" element={<AddProduct />} />
+          <Route path="/categories" element={<CategoryPage />} />
+          <Route path="products" element={<ProductPage />} />
         </Routes>
       </div>
     </div>
