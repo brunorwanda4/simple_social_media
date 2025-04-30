@@ -30,11 +30,3 @@ CREATE TABLE products (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL -- Or ON DELETE CASCADE, ON DELETE RESTRICT, etc.
 );
-
--- Optional: You might want a user to own or create a product
-/*
-ALTER TABLE products
-ADD COLUMN user_id INT,
-ADD CONSTRAINT fk_product_user
-FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;
-*/

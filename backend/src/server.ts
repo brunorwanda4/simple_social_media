@@ -5,6 +5,8 @@ import cors from 'cors';
 import 'dotenv/config'; // Load environment variables first
 
 import authRoutes from './routes/auth'; // Import authentication routes
+import categoryRoutes from './routes/categories'; // Import category routes
+import productRoutes from './routes/products'; // Import product routes
 import errorHandler from './middleware/error'; // Import error handling middleware
 import { testDatabaseConnection } from './config/db'; // Import the database connection test
 
@@ -29,6 +31,11 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bo
 // --- Routes ---
 // Mount the authentication routes under the '/api' path
 app.use('/api', authRoutes);
+// Mount the category routes under the '/api/categories' path
+app.use('/api/categories', categoryRoutes);
+// Mount the product routes under the '/api/products' path
+app.use('/api/products', productRoutes);
+
 
 // --- Error Handling Middleware ---
 // This should be the last middleware added
