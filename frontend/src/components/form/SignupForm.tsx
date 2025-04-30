@@ -1,5 +1,6 @@
 // src/components/SignupForm.tsx
 import { useState, ChangeEvent, FormEvent } from "react";
+import { Link } from "react-router-dom";
 
 // Define types for the state and props
 
@@ -141,157 +142,162 @@ function SignupForm({ onSignupSuccess }: SignupFormProps) {
   };
 
   return (
-    <div className="card bg-base-100 w-full max-w-lg shrink-0 shadow-2xl mx-auto">
-      <form className="card-body" onSubmit={handleSubmit} noValidate>
-        <h2 className="card-title text-2xl mb-4">Sign Up</h2>
+    <div className="container mx-auto p-4 min-h-screen flex flex-col items-center pt-10">
+      <div className="card bg-base-100 w-full max-w-lg shrink-0 shadow-2xl mx-auto">
+        <form className="card-body" onSubmit={handleSubmit} noValidate>
+          <h2 className="card-title text-2xl mb-4">Sign Up</h2>
 
-        {/* Error Message */}
-        {error && (
-          <div role="alert" className="alert alert-error mb-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="stroke-current shrink-0 h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+          {/* Error Message */}
+          {error && (
+            <div role="alert" className="alert alert-error mb-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="stroke-current shrink-0 h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>Error! {error}</span>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {success && (
+            <div role="alert" className="alert alert-success mb-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="stroke-current shrink-0 h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>{success}</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* First Name */}
+            <div className="form-control">
+              <label className="label" htmlFor="firstName">
+                <span className="label-text">First Name</span>
+              </label>
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                placeholder="John"
+                className="input input-bordered w-full"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
               />
-            </svg>
-            <span>Error! {error}</span>
-          </div>
-        )}
+            </div>
 
-        {/* Success Message */}
-        {success && (
-          <div role="alert" className="alert alert-success mb-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="stroke-current shrink-0 h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            {/* Last Name */}
+            <div className="form-control flex flex-col">
+              <label className="label" htmlFor="lastName">
+                <span className="label-text">Last Name</span>
+              </label>
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                placeholder="Doe"
+                className="input input-bordered"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
               />
-            </svg>
-            <span>{success}</span>
+            </div>
           </div>
-        )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* First Name */}
-          <div className="form-control">
-            <label className="label" htmlFor="firstName">
-              <span className="label-text">First Name</span>
+          {/* Email */}
+          <div className="form-control mt-4 flex flex-col">
+            <label className="label" htmlFor="email">
+              <span className="label-text">Email</span>
             </label>
             <input
-              type="text"
-              id="firstName"
-              name="firstName"
-              placeholder="John"
-              className="input input-bordered"
-              value={formData.firstName}
+              type="email"
+              id="email"
+              name="email"
+              placeholder="john.doe@example.com"
+              className="input input-bordered w-full"
+              value={formData.email}
               onChange={handleChange}
               required
               disabled={isLoading}
             />
           </div>
 
-          {/* Last Name */}
-          <div className="form-control">
-            <label className="label" htmlFor="lastName">
-              <span className="label-text">Last Name</span>
+          {/* Password */}
+          <div className="form-control mt-4 flex flex-col">
+            <label className="label" htmlFor="password">
+              <span className="label-text">Password</span>
             </label>
             <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              placeholder="Doe"
-              className="input input-bordered"
-              value={formData.lastName}
+              type="password"
+              id="password"
+              name="password"
+              placeholder="••••••••"
+              className="input input-bordered w-full"
+              value={formData.password}
               onChange={handleChange}
               required
               disabled={isLoading}
             />
           </div>
-        </div>
 
-        {/* Email */}
-        <div className="form-control mt-4">
-          <label className="label" htmlFor="email">
-            <span className="label-text">Email</span>
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            placeholder="john.doe@example.com"
-            className="input input-bordered"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-          />
-        </div>
+          {/* Confirm Password */}
+          <div className="form-control mt-4 flex flex-col">
+            <label className="label" htmlFor="confirmPassword">
+              <span className="label-text">Confirm Password</span>
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              placeholder="••••••••"
+              className="input input-bordered w-full"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              disabled={isLoading}
+            />
+          </div>
 
-        {/* Password */}
-        <div className="form-control mt-4">
-          <label className="label" htmlFor="password">
-            <span className="label-text">Password</span>
-          </label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            placeholder="••••••••"
-            className="input input-bordered"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-          />
-        </div>
-
-        {/* Confirm Password */}
-        <div className="form-control mt-4">
-          <label className="label" htmlFor="confirmPassword">
-            <span className="label-text">Confirm Password</span>
-          </label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            placeholder="••••••••"
-            className="input input-bordered"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-            disabled={isLoading}
-          />
-        </div>
-
-        {/* Submit Button */}
-        <div className="form-control mt-6">
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <span className="loading loading-spinner"></span>
-            ) : (
-              "Sign Up"
-            )}
-          </button>
-        </div>
-      </form>
+          {/* Submit Button */}
+          <div className="form-control mt-6">
+            <button
+              type="submit"
+              className="btn btn-primary w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <span className="loading loading-spinner"></span>
+              ) : (
+                "Sign Up"
+              )}
+            </button>
+          </div>
+          <Link to="/" className="mr-4 text-blue-600 hover:underline">
+            Login
+          </Link>
+        </form>
+      </div>
     </div>
   );
 }

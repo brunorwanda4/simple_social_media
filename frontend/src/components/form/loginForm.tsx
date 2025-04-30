@@ -1,5 +1,6 @@
 // src/components/LoginForm.tsx
 import { useState, ChangeEvent, FormEvent } from "react";
+import { Link } from "react-router-dom";
 
 // Define types for the state and props
 
@@ -8,60 +9,78 @@ interface LoginFormData {
   password: string;
 }
 
-interface LoginFormProps {
-  onSignupSuccess?: () => void; // Optional function that returns void
+interface LoginProps {
+  // Optional function to call after successful login
+  onLoginSuccess?: (token: string, user: PublicUser) => void;
 }
 
-// Define a type for the expected API response structure
-interface SignupApiResponse {
-  success?: boolean; // success is optional based on the logic
-  message?: string; // message is optional based on the logic
-  // Add other potential fields if the API returns them, e.g., user data
+// Define the expected API response structure for a successful login
+interface LoginApiResponseSuccess {
+  success: true;
+  message: string;
+  token: string; // The JWT token from the backend
+  user: PublicUser; // Public user data from the backend
 }
 
-function LoginForm({ onSignupSuccess }: LoginFormProps) {
-  // Use defined props type
+// Define the expected API response structure for a failed login
+interface LoginApiResponseError {
+  success: false;
+  message: string;
+  // Optional: Add other error details if backend provides them
+}
+
+// Union type for the possible API responses
+type LoginApiResponse = LoginApiResponseSuccess | LoginApiResponseError;
+
+// Assuming you have a PublicUser interface defined somewhere,
+// or you can define it here to match the backend response structure
+interface PublicUser {
+    id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+    created_at: string; // Or Date, depending on how your backend serializes it
+}
+
+
+function LoginForm({ onLoginSuccess }: LoginProps) {
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
   });
-  const [error, setError] = useState<string>(""); // Explicitly type as string
-  const [success, setSuccess] = useState<string>(""); // Explicitly type as string
-  const [isLoading, setIsLoading] = useState<boolean>(false); // Explicitly type as boolean
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    // Type event
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }));
-    // Clear errors when user starts typing again
+    // Clear messages when user starts typing
     setError("");
     setSuccess("");
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    // Type event
-    e.preventDefault(); // Prevent default browser form submission
+    e.preventDefault();
     setError("");
     setSuccess("");
     setIsLoading(true);
 
     // --- Client-Side Validation ---
     if (!formData.email || !formData.password) {
-      setError("All fields are required.");
+      setError("Email and password are required.");
       setIsLoading(false);
       return;
     }
 
-    // Basic email format check (more robust checks can be added)
     if (!/\S+@\S+\.\S+/.test(formData.email)) {
       setError("Please enter a valid email address.");
       setIsLoading(false);
       return;
     }
-    // Add password strength check if desired
 
     // --- Prepare data for API ---
     const dataToSend: LoginFormData = {
@@ -70,7 +89,9 @@ function LoginForm({ onSignupSuccess }: LoginFormProps) {
     };
 
     try {
-      const response = await fetch("http://localhost:5001/api/signup", {
+      // --- API Call ---
+      // Change the endpoint to /api/login
+      const response = await fetch("http://localhost:5001/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,36 +99,56 @@ function LoginForm({ onSignupSuccess }: LoginFormProps) {
         body: JSON.stringify(dataToSend),
       });
 
-      const result: SignupApiResponse = await response.json();
+      // Cast the JSON response to the union type
+      const result: LoginApiResponse = await response.json();
 
       if (!response.ok) {
+        // Handle HTTP errors (4xx, 5xx) or backend success: false
+        // Use optional chaining ?. for safety, though the types define message
         setError(
-          result?.message || `An error occurred: ${response.statusText}`
+          result.message || `Login failed with status: ${response.status}`
         );
-      } else if (result?.success) {
-        setSuccess(result?.message || "Signup successful!");
-        setFormData({
-          email: "",
-          password: "",
-        });
-        if (onSignupSuccess) {
-          onSignupSuccess();
-        }
-      } else {
-        setError(result?.message || "Signup failed. Please try again.");
+      } else { // response.ok is true (status 200-299)
+          // Based on our backend, response.ok should mean success: true
+          const successResult = result as LoginApiResponseSuccess; // Cast for type safety after checking response.ok
+          console.log("Login successful:", successResult);
+
+          // --- Handle successful login ---
+          setSuccess(successResult.message || "Login successful!");
+
+          // Store the token in localStorage
+          localStorage.setItem('authToken', successResult.token);
+
+          // Optional: Store user info as well if needed elsewhere in the app
+          localStorage.setItem('userInfo', JSON.stringify(successResult.user));
+
+          // Call the success callback if provided
+          if (onLoginSuccess) {
+              onLoginSuccess(successResult.token, successResult.user);
+          }
+
+          // Clear the form or redirect the user (redirection is more common)
+        //   setFormData({ email: "", password: "" });
+        //   redirect(`/dashboard`)
+          // Example Redirect:
+          window.location.href = '/dashboard'; // Redirect to your dashboard route
+
+
       }
     } catch (err) {
-      console.error("Signup fetch error:", err);
+      console.error("Login fetch error:", err);
       setError("Could not connect to the server. Please try again later.");
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Stop loading indicator
     }
   };
 
   return (
-    <div className="card bg-base-100 w-full max-w-lg shrink-0 shadow-2xl mx-auto">
-      <form className="card-body" onSubmit={handleSubmit} noValidate>
-        <h2 className="card-title text-2xl mb-4">Sign Up</h2>
+    <div className="container mx-auto p-4 min-h-screen flex flex-col items-center pt-10">
+        <div className="card bg-base-100 w-full max-w-lg shrink-0 shadow-2xl mx-auto ">
+      {/* Changed title and removed formnovalidate - use client-side validation */}
+      <form className="card-body" onSubmit={handleSubmit}>
+        <h2 className="card-title text-2xl mb-4 text-center">Login</h2>
 
         {/* Error Message */}
         {error && (
@@ -150,7 +191,7 @@ function LoginForm({ onSignupSuccess }: LoginFormProps) {
         )}
 
         {/* Email */}
-        <div className="form-control mt-4">
+        <div className="form-control mt-4 flex flex-col ">
           <label className="label" htmlFor="email">
             <span className="label-text">Email</span>
           </label>
@@ -159,7 +200,7 @@ function LoginForm({ onSignupSuccess }: LoginFormProps) {
             id="email"
             name="email"
             placeholder="john.doe@example.com"
-            className="input input-bordered"
+            className="input input-bordered w-full"
             value={formData.email}
             onChange={handleChange}
             required
@@ -168,7 +209,7 @@ function LoginForm({ onSignupSuccess }: LoginFormProps) {
         </div>
 
         {/* Password */}
-        <div className="form-control mt-4">
+        <div className="form-control mt-4 flex flex-col">
           <label className="label" htmlFor="password">
             <span className="label-text">Password</span>
           </label>
@@ -177,7 +218,7 @@ function LoginForm({ onSignupSuccess }: LoginFormProps) {
             id="password"
             name="password"
             placeholder="••••••••"
-            className="input input-bordered"
+            className="input input-bordered w-full"
             value={formData.password}
             onChange={handleChange}
             required
@@ -189,17 +230,21 @@ function LoginForm({ onSignupSuccess }: LoginFormProps) {
         <div className="form-control mt-6">
           <button
             type="submit"
-            className="btn btn-primary"
+            className="btn btn-primary w-full"
             disabled={isLoading}
           >
             {isLoading ? (
               <span className="loading loading-spinner"></span>
             ) : (
-              "Login"
+              "Login" // Changed button text
             )}
           </button>
         </div>
+      <Link to="/register" className="mr-4 text-blue-600 hover:underline">
+        Create account
+      </Link>
       </form>
+    </div>
     </div>
   );
 }
