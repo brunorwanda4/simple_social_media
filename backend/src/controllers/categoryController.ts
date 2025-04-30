@@ -1,8 +1,14 @@
+// src/controllers/categoryController.ts
+
 import { Request, Response } from 'express';
 import pool from '../config/db'; // Import the database pool
 import { CategoryRow, CreateCategoryRequestBody, UpdateCategoryRequestBody } from '../types'; // Import types
 import { OkPacket, RowDataPacket } from 'mysql2/promise';
+import { ParamsDictionary } from 'express-serve-static-core'; // Import ParamsDictionary
 
+/**
+ * Get all categories.
+ */
 export const getAllCategories = async (req: Request, res: Response) => {
     try {
         const [categories] = await pool.query<CategoryRow[]>('SELECT id, name, created_at FROM categories ORDER BY name ASC');
@@ -13,7 +19,11 @@ export const getAllCategories = async (req: Request, res: Response) => {
     }
 };
 
-export const getCategoryById = async (req: Request, res: Response) => {
+/**
+ * Get a single category by ID.
+ * Explicitly type Request to include 'id' in params.
+ */
+export const getCategoryById = async (req: Request<{ id: string }>, res: Response) => {
     const categoryId = req.params.id;
 
     try {
@@ -30,7 +40,9 @@ export const getCategoryById = async (req: Request, res: Response) => {
     }
 };
 
-
+/**
+ * Create a new category.
+ */
 export const createCategory = async (req: Request<{}, {}, CreateCategoryRequestBody>, res: Response) => {
     const { name } = req.body;
 
@@ -39,6 +51,7 @@ export const createCategory = async (req: Request<{}, {}, CreateCategoryRequestB
     }
 
     try {
+        // Check if category name already exists
         const [existingCategories] = await pool.query<CategoryRow[]>('SELECT id FROM categories WHERE name = ?', [name]);
         if (existingCategories.length > 0) {
             return res.status(409).json({ success: false, message: 'Category name already exists.' });
@@ -49,13 +62,14 @@ export const createCategory = async (req: Request<{}, {}, CreateCategoryRequestB
 
         console.log(`Category created with ID: ${result.insertId}`);
 
+        // Fetch the newly created category to return it in the response
         const [newCategory] = await pool.query<CategoryRow[]>('SELECT id, name, created_at FROM categories WHERE id = ? LIMIT 1', [result.insertId]);
 
 
         res.status(201).json({
             success: true,
             message: 'Category created successfully!',
-            category: newCategory[0] 
+            category: newCategory[0] // Return the created category object
         });
 
     } catch (error) {
@@ -64,7 +78,11 @@ export const createCategory = async (req: Request<{}, {}, CreateCategoryRequestB
     }
 };
 
-export const updateCategory = async (req: Request<{id: string}, {}, UpdateCategoryRequestBody>, res: Response) => {
+/**
+ * Update an existing category by ID.
+ * Explicitly type Request to include 'id' in params.
+ */
+export const updateCategory = async (req: Request<{ id: string }, {}, UpdateCategoryRequestBody>, res: Response) => {
     const categoryId = req.params.id;
     const { name } = req.body;
 
@@ -73,11 +91,13 @@ export const updateCategory = async (req: Request<{id: string}, {}, UpdateCatego
     }
 
     try {
+        // Check if the category exists
         const [existingCategories] = await pool.query<CategoryRow[]>('SELECT id FROM categories WHERE id = ? LIMIT 1', [categoryId]);
         if (existingCategories.length === 0) {
             return res.status(404).json({ success: false, message: 'Category not found.' });
         }
 
+        // Check if the new category name already exists for a different category
         const [duplicateName] = await pool.query<CategoryRow[]>('SELECT id FROM categories WHERE name = ? AND id != ?', [name, categoryId]);
         if (duplicateName.length > 0) {
              return res.status(409).json({ success: false, message: 'Category name already exists.' });
@@ -88,6 +108,8 @@ export const updateCategory = async (req: Request<{id: string}, {}, UpdateCatego
         const [result] = await pool.query<OkPacket>(updateQuery, [name, categoryId]);
 
         if (result.affectedRows === 0) {
+             // This case should ideally not be hit if the category was found above,
+             // but it's a good safeguard.
             return res.status(404).json({ success: false, message: 'Category not found or no changes made.' });
         }
 
@@ -108,7 +130,11 @@ export const updateCategory = async (req: Request<{id: string}, {}, UpdateCatego
     }
 };
 
-export const deleteCategory = async (req: Request<{id: string}>, res: Response) => {
+/**
+ * Delete a category by ID.
+ * Explicitly type Request to include 'id' in params.
+ */
+export const deleteCategory = async (req: Request<{ id: string }>, res: Response) => {
     const categoryId = req.params.id;
 
     try {

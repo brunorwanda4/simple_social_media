@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import pool from '../config/db'; // Import the database pool
 import { ProductRow, ProductWithCategory, CreateProductRequestBody, UpdateProductRequestBody, CategoryRow } from '../types'; // Import types
 import { OkPacket, RowDataPacket } from 'mysql2/promise';
+import { ParamsDictionary } from 'express-serve-static-core'; // Import ParamsDictionary
 
 /**
  * Get all products, optionally with category name.
@@ -36,8 +37,9 @@ export const getAllProducts = async (req: Request, res: Response) => {
 
 /**
  * Get a single product by ID, with category name.
+ * Explicitly type Request to include 'id' in params.
  */
-export const getProductById = async (req: Request, res: Response) => {
+export const getProductById = async (req: Request<{ id: string }>, res: Response) => {
     const productId = req.params.id;
 
     try {
@@ -131,8 +133,9 @@ export const createProduct = async (req: Request<{}, {}, CreateProductRequestBod
 
 /**
  * Update an existing product by ID.
+ * Explicitly type Request to include 'id' in params.
  */
-export const updateProduct = async (req: Request<{id: string}, {}, UpdateProductRequestBody>, res: Response) => {
+export const updateProduct = async (req: Request<{ id: string }, {}, UpdateProductRequestBody>, res: Response) => {
     const productId = req.params.id;
     const { name, categoryId } = req.body;
 
@@ -155,6 +158,12 @@ export const updateProduct = async (req: Request<{id: string}, {}, UpdateProduct
 
 
     try {
+        // Check if the product exists
+         const [existingProducts] = await pool.query<ProductRow[]>('SELECT id FROM products WHERE id = ? LIMIT 1', [productId]);
+        if (existingProducts.length === 0) {
+            return res.status(404).json({ success: false, message: 'Product not found.' });
+        }
+
         // Build the update query dynamically based on provided fields
         const updates: string[] = [];
         const values: (string | number | null)[] = [];
@@ -169,6 +178,7 @@ export const updateProduct = async (req: Request<{id: string}, {}, UpdateProduct
         }
 
         if (updates.length === 0) {
+            // This case should be caught by the initial check, but good safeguard
             return res.status(400).json({ success: false, message: 'No valid fields provided for update.' });
         }
 
@@ -178,6 +188,8 @@ export const updateProduct = async (req: Request<{id: string}, {}, UpdateProduct
         const [result] = await pool.query<OkPacket>(updateQuery, values);
 
         if (result.affectedRows === 0) {
+             // This case should ideally not be hit if the product was found above,
+             // but it's a good safeguard.
             return res.status(404).json({ success: false, message: 'Product not found or no changes made.' });
         }
 
@@ -215,8 +227,9 @@ export const updateProduct = async (req: Request<{id: string}, {}, UpdateProduct
 
 /**
  * Delete a product by ID.
+ * Explicitly type Request to include 'id' in params.
  */
-export const deleteProduct = async (req: Request<{id: string}>, res: Response) => {
+export const deleteProduct = async (req: Request<{ id: string }>, res: Response) => {
     const productId = req.params.id;
 
     try {
