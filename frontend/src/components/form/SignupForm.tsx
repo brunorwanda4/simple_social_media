@@ -44,19 +44,16 @@ function SignupForm({ onSignupSuccess }: SignupFormProps) {
       ...prevState,
       [name]: value,
     }));
-    // Clear errors when user starts typing again
     setError("");
     setSuccess("");
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    // Type event
-    e.preventDefault(); // Prevent default browser form submission
+    e.preventDefault(); 
     setError("");
     setSuccess("");
     setIsLoading(true);
 
-    // --- Client-Side Validation ---
     if (
       !formData.firstName ||
       !formData.lastName ||
@@ -73,27 +70,20 @@ function SignupForm({ onSignupSuccess }: SignupFormProps) {
       setIsLoading(false);
       return;
     }
-    // Basic email format check (more robust checks can be added)
     if (!/\S+@\S+\.\S+/.test(formData.email)) {
       setError("Please enter a valid email address.");
       setIsLoading(false);
       return;
     }
-    // Add password strength check if desired
-
-    // --- Prepare data for API ---
     const dataToSend: SignupFormData = {
-      // Ensure dataToSend matches the type
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
       password: formData.password,
-      confirmPassword: formData.confirmPassword, // Send confirmPassword for server check too
+      confirmPassword: formData.confirmPassword, 
     };
 
     try {
-      // --- API Call ---
-      // Make sure the backend URL is correct (uses port from .env)
       const response = await fetch("http://localhost:5001/api/signup", {
         method: "POST",
         headers: {
@@ -102,39 +92,30 @@ function SignupForm({ onSignupSuccess }: SignupFormProps) {
         body: JSON.stringify(dataToSend),
       });
 
-      // Use the defined API response type
       const result: SignupApiResponse = await response.json();
 
       if (!response.ok) {
-        // Handle HTTP errors (4xx, 5xx)
-        // Use optional chaining ?. for safety
         setError(
           result?.message || `An error occurred: ${response.statusText}`
         );
       } else if (result?.success) {
-        // Check result.success if it exists
-        // Handle successful signup
-        // Use optional chaining ?. for safety
         setSuccess(result?.message || "Signup successful!");
         setFormData({
-          // Clear form on success
           firstName: "",
           lastName: "",
           email: "",
           password: "",
           confirmPassword: "",
         });
+        
         if (onSignupSuccess) {
-          onSignupSuccess(); // Call the success callback if provided
+          onSignupSuccess();
         }
       } else {
-        // Handle cases where response is ok but operation failed (e.g., validation error)
-        // Use optional chaining ?. for safety
         setError(result?.message || "Signup failed. Please try again.");
       }
     } catch (err) {
       console.error("Signup fetch error:", err);
-      // Type assertion for err if you need to access specific properties like err.message
       setError("Could not connect to the server. Please try again later.");
     } finally {
       setIsLoading(false); // Stop loading indicator

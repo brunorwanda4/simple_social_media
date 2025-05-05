@@ -119,20 +119,11 @@ function LoginForm({ onLoginSuccess }: LoginProps) {
           // Store the token in localStorage
           localStorage.setItem('authToken', successResult.token);
 
-          // Optional: Store user info as well if needed elsewhere in the app
           localStorage.setItem('userInfo', JSON.stringify(successResult.user));
 
-          // Call the success callback if provided
           if (onLoginSuccess) {
               onLoginSuccess(successResult.token, successResult.user);
           }
-
-          // Clear the form or redirect the user (redirection is more common)
-        //   setFormData({ email: "", password: "" });
-        //   redirect(`/dashboard`)
-          // Example Redirect:
-          window.location.href = '/dashboard'; // Redirect to your dashboard route
-
 
       }
     } catch (err) {
